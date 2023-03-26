@@ -1,0 +1,93 @@
+Parameters:
+  MyIp:
+    Description: IP address of my login machine
+    Type: String
+  VpcCidrBlock:
+    Description: CIDR block to allocate for the VPC
+    Type: String
+  SubnetCidrBlock:
+    Description: CIDR block to allocate for the subnet
+    Type: String
+  InstanceType:
+    Description: Type of EC2 instnace to use
+    Type: String
+  LoginKey:
+    Description: Key to use for ec2 login
+    Type: String
+  Ami:
+    Description: AMI to use for ec2
+    Type: String
+Resources:
+  ClusterVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      Tags:
+        - Key: Name
+          Value: RHEL_Playground_VPC
+  VpcSubnet:
+    Type: AWS::EC2::Subnet
+    DependsOn: ClusterVpc
+    Properties:
+      VpcId: !GetAtt ClusterVpc.VpcId
+      CidrBlock: !Ref SubnetCidrBlock
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: Name
+          Value: Rhel_Playground_Subnet
+  LoginSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: ClusterVpc
+    Properties:
+      GroupDescription: Allow ssh to instance
+      VpcId: !Ref ClusterVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIp
+      Tags:
+        - Key: Name
+          Value: RHEL_Playground_SG
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: ClusterVpc
+    Properties:
+      Tags:
+        - Key: Name
+          Value: RHEL_Playground_IGW
+  IgwAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn: InternetGateway
+    Properties:
+      InternetGatewayId: !GetAtt InternetGateway.InternetGatewayId
+      VpcId: !GetAtt ClusterVpc.VpcId
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !GetAtt ClusterVpc.VpcId
+  Route:
+    Type: AWS::EC2::Route
+    DependsOn: IgwAttachment
+    Properties:
+      RouteTableId: !GetAtt RouteTable.RouteTableId
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  SubnetRouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt VpcSubnet.SubnetId
+      RouteTableId: !GetAtt RouteTable.RouteTableId
+  LoginInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+      - VpcSubnet
+    Properties:
+      ImageId: !Ref Ami
+      KeyName: !Ref LoginKey
+      SubnetId: !GetAtt VpcSubnet.SubnetId
+      SecurityGroupIds:
+        - !GetAtt LoginSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: RHEL_Playground_Login
