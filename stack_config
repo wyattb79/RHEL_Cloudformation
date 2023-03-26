@@ -1,0 +1,16 @@
+#! /bin/bash
+
+# name of the stack
+cfn_stack_name=
+
+# type of instance to launch, for example t2.micro
+ec2_instance_type=
+
+# cidr block to allocate for the vpc
+vpc_cidr_block=
+
+# cidr block for subnet
+subnet_cidr=
+
+# the IP address of the source SSH machine into the login node of the cluster
+source_ip=
