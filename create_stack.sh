@@ -21,7 +21,9 @@ if [ "${create}" == "YES" ]; then
     --parameters ParameterKey=MyIp,ParameterValue=${source_ip} \
                  ParameterKey=VpcCidrBlock,ParameterValue=${vpc_cidr_block} \
                  ParameterKey=SubnetCidrBlock,ParameterValue=${subnet_cidr} \
-                 ParameterKey=InstanceType,ParameterValue=${ex2_instance_type} 
+                 ParameterKey=InstanceType,ParameterValue=${ec2_instance_type} \
+                 ParameterKey=LoginKey,ParameterValue=${login_key} \
+                 ParameterKey=Ami,ParameterValue=${ami} 
 else
   echo "Exiting"
   exit 0   
