@@ -14,3 +14,9 @@ subnet_cidr=
 
 # the IP address of the source SSH machine into the login node of the cluster
 source_ip=
+
+# the key to use for ec2 login
+login_key=
+
+# ami to use for ec2
+ami=
