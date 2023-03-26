@@ -49,6 +49,21 @@ Resources:
       Tags:
         - Key: Name
           Value: RHEL_Playground_SG
+  InternalSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: ClusterVpc
+    Properties:
+      GroupDescription: Internal security group
+      VpcId: !Ref ClusterVpc
+  SecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: InternalSecurityGroup
+    Properties:
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+      GroupId: !GetAtt InternalSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt InternalSecurityGroup.GroupId
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     DependsOn: ClusterVpc
@@ -85,9 +100,25 @@ Resources:
     Properties:
       ImageId: !Ref Ami
       KeyName: !Ref LoginKey
+      InstanceType: !Ref InstanceType
       SubnetId: !GetAtt VpcSubnet.SubnetId
       SecurityGroupIds:
         - !GetAtt LoginSecurityGroup.GroupId
+        - !GetAtt InternalSecurityGroup.GroupId
       Tags:
         - Key: Name
           Value: RHEL_Playground_Login
+  WorkerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+      - VpcSubnet
+    Properties:
+      ImageId: !Ref Ami
+      KeyName: !Ref LoginKey
+      InstanceType: !Ref InstanceType
+      SubnetId: !GetAtt VpcSubnet.SubnetId
+      SecurityGroupIds:
+        - !GetAtt InternalSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: RHEL_Playground_Worker
