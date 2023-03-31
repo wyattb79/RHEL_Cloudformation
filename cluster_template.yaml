@@ -122,3 +122,7 @@ Resources:
       Tags:
         - Key: Name
           Value: RHEL_Playground_Worker
+Outputs:
+  LoginIp:
+    Description: Login IP Address
+    Value: !GetAtt LoginInstance.PublicIp
